@@ -1,6 +1,8 @@
+import json
 import os
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 
 url = 'https://www.kemdikbud.go.id/main/blog/category/berita'
 
@@ -56,6 +58,7 @@ def get_all_items():
     #show
     #link
 
+    news_list = []
     for item in contents:
         judul = item.find('strong')
         title = judul.text
@@ -68,7 +71,32 @@ def get_all_items():
         except:
             news_link = 'Link is not available'
 
-        print(news_link)
+        #sorting data
+        data_dict = {
+            'titel': title,
+            'date' : time,
+            'show' : show,
+            'link' : news_link
+        }
+        news_list.append(data_dict)
+
+    #writing_json_file
+    try:
+        os.mkdir('json_result')
+    except FileExistsError:
+        pass
+
+    with open('json_result/news_list.json', 'w+') as json_data:
+        json.dump(news_list, json_data)
+    print('json created')
+
+    # create csv dan excel
+    df = pd.DataFrame(news_list)
+    df.to_csv('kemendikbud_news.csv', index=False)
+    df.to_excel('kemendikbud_news.xlsx', index=False)
+
+    # data created
+    print('Data Created Success')
 
 
 if __name__ == '__main__':
