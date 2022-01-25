@@ -33,7 +33,8 @@ def get_total_pages():
     pages = pagination.find_all('li')
     for page in pages:
         total_page.append(page.text)
-
+    del total_page[-1]
+    del total_page[-1]
     print(total_page)
     return total_page
 
@@ -89,15 +90,45 @@ def get_all_items():
     with open('json_result/news_list.json', 'w+') as json_data:
         json.dump(news_list, json_data)
     print('json created')
+    return news_list
 
-    # create csv dan excel
-    df = pd.DataFrame(news_list)
-    df.to_csv('kemendikbud_news.csv', index=False)
-    df.to_excel('kemendikbud_news.xlsx', index=False)
 
-    # data created
-    print('Data Created Success')
+def create_document(dataFrame, filename):
+    try:
+        os.mkdir('data_result')
+    except FileExistsError:
+        pass
+    filename = 'berita_kemendikbud'
+    df = pd.DataFrame(dataFrame)
+    df.to_csv(f'data_result/{filename}.csv', index=False)
+    df.to_excel(f'data_result/{filename}.xlsx', index=False)
+
+    print(f'File {filename}.csv and {filename}.xlsx successfully created')
+
+
+def run():
+    total = get_total_pages()
+
+    counter = 0
+    final_result = []
+    for page in range(len(total)):
+        page += 1
+        counter += 25
+        final_result += get_all_items()
+
+    #formating data
+    try:
+        os.mkdir('reports')
+    except FileExistsError:
+        pass
+    with open('reports/{}.json', 'w+') as final_data:
+        json.dump(final_result, final_data)
+
+    print('Data json created')
+
+    #created document
+    create_document(final_result, final_data)
 
 
 if __name__ == '__main__':
-    get_all_items()
+    run()
